@@ -39,31 +39,6 @@ export default function RootLayout({
         </header>
         
         {children}
-        
-        <footer className="bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 text-white py-8">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-xl font-bold mb-4">Queen City Blendz</h3>
-                <p className="text-purple-200">Professional hair cutting and nail services for everyone.</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold mb-4">Contact Us</h3>
-                <p className="text-purple-200">Email: queencityblendzzz@gmail.com</p>
-                <p className="text-purple-200">Phone: (980) 833-9861</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold mb-4">Hours</h3>
-                <p className="text-purple-200">Monday - Friday: 9am - 6pm</p>
-                <p className="text-purple-200">Saturday: 10am - 4pm</p>
-                <p className="text-purple-200">Sunday: Closed</p>
-              </div>
-            </div>
-            <div className="mt-8 pt-8 border-t border-purple-700 text-center text-purple-300">
-              <p>&copy; {new Date().getFullYear()} Queen City Blendz. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
       </body>
     </html>
   );
