@@ -163,11 +163,11 @@ export default function Home() {
       
       // Find appointments for the selected date
       const appointmentsForDate = storedAppointments.filter(
-        (appointment: any) => appointment.date === selectedDate
+        (appointment: {date: string}) => appointment.date === selectedDate
       );
       
       // Get booked time slots
-      const bookedTimeSlots = appointmentsForDate.map((appointment: any) => appointment.time);
+      const bookedTimeSlots = appointmentsForDate.map((appointment: {time: string}) => appointment.time);
       
       // Filter out booked time slots
       const availableTimeSlotsForDate = AVAILABLE_DATES[selectedDate].filter(
@@ -283,7 +283,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
               </svg>
               <h3 className="text-2xl font-semibold text-purple-900 mb-2">Booking Confirmed!</h3>
-              <p className="text-gray-600 mb-6">We'll contact you shortly with confirmation.</p>
+              <p className="text-gray-600 mb-6">We&apos;ll contact you shortly with confirmation.</p>
               <button 
                 onClick={() => setSubmitStatus(null)}
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-6 rounded-md hover:from-purple-700 hover:to-indigo-700 transition-colors"

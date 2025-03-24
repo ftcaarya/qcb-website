@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  const { pathname, origin } = request.nextUrl;
+  const { pathname } = request.nextUrl;
   
   // Get hostname (e.g. vercel.app, example.com) of the request
   const hostname = request.headers.get('host') || '';

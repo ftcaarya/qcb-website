@@ -38,7 +38,6 @@ export default function AdminPanel() {
   const [selectedDate, setSelectedDate] = useState('');
   const [availableDates, setAvailableDates] = useState<DateInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newCustomTimeSlot, setNewCustomTimeSlot] = useState('');
   const [customHour, setCustomHour] = useState('10');
   const [customMinute, setCustomMinute] = useState('00');
   const [customAmPm, setCustomAmPm] = useState('AM');
@@ -180,7 +179,7 @@ export default function AdminPanel() {
     
     // Clean up interval on component unmount
     return () => clearInterval(appointmentCheckInterval);
-  }, []);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleTimeSlotAvailability = (date: string, timeSlot: string) => {
     setAvailableSlots(prev => {
