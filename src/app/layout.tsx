@@ -1,13 +1,26 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Bree_Serif, Libre_Baskerville } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const breeSerif = Bree_Serif({ 
+  weight: '400',
+  subsets: ["latin"],
+  display: 'swap',
+  variable: '--font-bree',
+});
+
+const libreBaskerville = Libre_Baskerville({
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  subsets: ["latin"],
+  display: 'swap',
+  variable: '--font-baskerville',
+});
 
 export const metadata: Metadata = {
-  title: "Queen City Blendz - Hair Cutting & Nail Services",
-  description: "Book your appointment with Queen City Blendz for professional hair cutting and nail services.",
+  title: "Queen City Blendz - Haircuts",
+  description: "Book your appointment with Queen City Blendz for professional haircuts.",
 };
 
 export default function RootLayout({
@@ -17,14 +30,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${breeSerif.variable} ${libreBaskerville.variable} ${breeSerif.className}`}>
         <header className="bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 text-white py-4 shadow-md">
           <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-xl font-bold">
+              <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-xl font-display font-bold italic">
                 QCB
               </div>
-              <span className="font-bold text-xl">Queen City Blendz</span>
+              <span className="font-display text-xl font-bold tracking-wide italic">Queen City Blendz</span>
             </div>
             <nav>
               <ul className="flex space-x-6">

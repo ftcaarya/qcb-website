@@ -284,7 +284,7 @@ export default function AdminPanel() {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h3 className="text-xl font-semibold text-purple-900 mb-4">Edit Appointment</h3>
+          <h3 className="text-xl font-display font-semibold italic text-purple-900 mb-4">Edit Appointment</h3>
           
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -393,7 +393,7 @@ export default function AdminPanel() {
       
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-purple-900">Haircut Appointments Dashboard</h1>
+          <h1 className="text-3xl font-display font-bold italic text-purple-900 tracking-tight">Haircut Appointments Dashboard</h1>
           <div className="flex space-x-4">
             <button 
               onClick={refreshAppointments}
@@ -415,12 +415,12 @@ export default function AdminPanel() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-purple-900 mb-4">Manage Available Time Slots</h2>
+          <h2 className="text-xl font-display font-semibold italic text-purple-900 mb-4 tracking-tight">Manage Available Time Slots</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Date Selection */}
             <div>
-              <h3 className="text-lg font-medium text-purple-800 mb-4">Select Date</h3>
+              <h3 className="text-lg font-display font-medium italic text-purple-800 mb-4 tracking-tight">Select Date</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {availableDates.map((date) => (
                   <button
@@ -446,7 +446,7 @@ export default function AdminPanel() {
             {/* Time Slots Management */}
             {selectedDate && (
               <div>
-                <h3 className="text-lg font-medium text-purple-800 mb-4">
+                <h3 className="text-lg font-display font-medium italic text-purple-800 mb-4 tracking-tight">
                   Manage Time Slots for {(() => {
                     // Parse the date and create a new Date object
                     const [year, month, day] = selectedDate.split('-').map(num => parseInt(num));
@@ -483,7 +483,7 @@ export default function AdminPanel() {
                 
                 {/* Custom time slot creator */}
                 <div className="mb-6 p-4 border rounded-md bg-purple-50">
-                  <h4 className="text-md font-medium mb-3 text-purple-800">Add Custom Time Slot</h4>
+                  <h4 className="text-md font-display font-medium italic text-purple-800 mb-3 tracking-tight">Add Custom Time Slot</h4>
                   <div className="flex flex-wrap gap-2 items-end">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Hour</label>
@@ -555,11 +555,11 @@ export default function AdminPanel() {
 
         {/* Appointments List */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-purple-900 mb-4">Upcoming Appointments</h2>
+          <h2 className="text-xl font-display font-semibold italic text-purple-900 mb-4 tracking-tight">Upcoming Appointments</h2>
           
           {selectedDate ? (
             <>
-              <h3 className="text-lg font-medium text-purple-800 mb-4">
+              <h3 className="text-lg font-display font-medium italic text-purple-800 mb-4 tracking-tight">
                 Appointments for {(() => {
                   // Parse the date and create a new Date object
                   const [year, month, day] = selectedDate.split('-').map(num => parseInt(num));

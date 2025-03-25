@@ -64,8 +64,8 @@ export default function AdminLayout({
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
         <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-purple-900">Queen City Blendz</h1>
-            <p className="text-purple-600">Admin Login</p>
+            <h1 className="text-2xl font-display font-bold italic text-purple-900 tracking-tight">Queen City Blendz</h1>
+            <p className="text-purple-600 font-medium">Admin Login</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
@@ -76,7 +76,7 @@ export default function AdminLayout({
             )}
             
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="password">
+              <label className="block text-gray-700 mb-2 font-medium" htmlFor="password">
                 Admin Password
               </label>
               <input
