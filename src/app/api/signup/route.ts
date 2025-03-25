@@ -4,8 +4,35 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+// Cooldown tracking with in-memory storage
+// In a production environment, use Redis or a database for persistence across instances
+const ipCooldowns = new Map<string, number>();
+const COOLDOWN_PERIOD_MS = 10 * 60 * 1000; // 10 minutes cooldown
+
 export async function POST(request: Request) {
   try {
+    // Get the IP address from the request
+    const ip = request.headers.get('x-forwarded-for') || 
+               request.headers.get('x-real-ip') || 
+               'unknown-ip';
+    
+    // Check if this IP is in cooldown
+    const lastBookingTime = ipCooldowns.get(ip);
+    const currentTime = Date.now();
+    
+    if (lastBookingTime && (currentTime - lastBookingTime < COOLDOWN_PERIOD_MS)) {
+      // Calculate remaining cooldown time in minutes and seconds
+      const remainingMs = COOLDOWN_PERIOD_MS - (currentTime - lastBookingTime);
+      const remainingMinutes = Math.floor(remainingMs / 60000);
+      const remainingSeconds = Math.floor((remainingMs % 60000) / 1000);
+      
+      return NextResponse.json({ 
+        error: 'Rate limit exceeded', 
+        message: `Please wait ${remainingMinutes} minutes and ${remainingSeconds} seconds before making another booking.`,
+        remainingMs
+      }, { status: 429 });
+    }
+    
     const data = await request.json();
     const { name, email, phone, service, date, time } = data;
 
@@ -46,6 +73,14 @@ print(json.dumps({
     if (!result.success) {
       throw new Error('Failed to add booking');
     }
+
+    // Record successful booking time for this IP
+    ipCooldowns.set(ip, currentTime);
+    
+    // Set up automatic cleanup of old cooldown entries
+    setTimeout(() => {
+      ipCooldowns.delete(ip);
+    }, COOLDOWN_PERIOD_MS);
 
     return NextResponse.json({ 
       success: true, 

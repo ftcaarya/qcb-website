@@ -41,9 +41,10 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState('');
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | 'rate-limited' | null>(null);
   const [currentStep, setCurrentStep] = useState(1); // 1: Date selection, 2: Time & details
   const [showPhone, setShowPhone] = useState(false);
+  const [rateLimitMessage, setRateLimitMessage] = useState('');
 
   // Generate dates for the next 14 days
   const getNextTwoWeeks = (): DateInfo[] => {
@@ -189,35 +190,29 @@ export default function Home() {
     };
     
     try {
-      // Generate a booking ID
-      const bookingId = `booking-${Date.now()}`;
-      
-      // Store the appointment data in localStorage so it can be accessed by the admin panel
-      // In a real app, this would be sent to a backend API
-      const storedAppointments = JSON.parse(localStorage.getItem('qcb-appointments') || '[]');
-      
-      // Parse the date for proper formatted date display
-      const [year, month, day] = selectedDate.split('-').map(num => parseInt(num));
-      const formattedDate = new Date(year, month - 1, day).toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
-        day: 'numeric' 
+      // Send the booking data to the server API
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData),
       });
       
-      // Add the new appointment
-      storedAppointments.push({
-        id: bookingId,
-        ...submissionData,
-        formattedDate
-      });
+      const result = await response.json();
       
-      // Save back to localStorage
-      localStorage.setItem('qcb-appointments', JSON.stringify(storedAppointments));
+      // Check if we got a rate limit error
+      if (!response.ok) {
+        if (response.status === 429) {
+          // Rate limit exceeded
+          setSubmitStatus('rate-limited');
+          setRateLimitMessage(result.message || 'Please try again later.');
+          return;
+        }
+        throw new Error(result.error || 'Something went wrong');
+      }
       
       console.log('Booking data saved:', submissionData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Successful response
       setSubmitStatus('success');
@@ -289,6 +284,20 @@ export default function Home() {
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-6 rounded-md hover:from-purple-700 hover:to-indigo-700 transition-colors"
               >
                 Book Another Appointment
+              </button>
+            </div>
+          ) : submitStatus === 'rate-limited' ? (
+            <div className="text-center py-10">
+              <svg className="w-16 h-16 text-orange-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <h3 className="text-2xl font-semibold text-orange-600 mb-2">Booking Limit Reached</h3>
+              <p className="text-gray-600 mb-6">{rateLimitMessage}</p>
+              <button 
+                onClick={() => setSubmitStatus(null)}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-6 rounded-md hover:from-purple-700 hover:to-indigo-700 transition-colors"
+              >
+                Try Again Later
               </button>
             </div>
           ) : (
