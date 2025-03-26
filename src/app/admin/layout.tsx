@@ -64,7 +64,7 @@ export default function AdminLayout({
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
         <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-display font-bold italic text-purple-900 tracking-tight">Queen City Blendz</h1>
+            <h1 className="text-2xl font-display font-bold italic text-purple-900 tracking-tight">Queen City Blends</h1>
             <p className="text-purple-600 font-medium">Admin Login</p>
           </div>
           
@@ -105,7 +105,7 @@ export default function AdminLayout({
   return (
     <div>
       <div className="bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 text-white py-2 px-4 flex justify-between items-center">
-        <span className="text-sm">Queen City Blendz Admin</span>
+        <span className="text-sm">Queen City Blends Admin</span>
         <button
           onClick={handleLogout}
           className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition-colors"
