@@ -37,7 +37,7 @@ export default function RootLayout({
               <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-xl font-display font-bold italic">
                 QCB
               </div>
-              <span className="font-display text-xl font-bold tracking-wide italic">Queen City Blendz</span>
+              <span className="font-display text-xl font-bold tracking-wide italic">Queen City Blends</span>
             </div>
             <nav>
               <ul className="flex space-x-6">
