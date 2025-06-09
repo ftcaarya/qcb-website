@@ -66,6 +66,10 @@ export default function AdminPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [isManagingTimeSlots, setIsManagingTimeSlots] = useState(false);
+  const [editingTimeSlot, setEditingTimeSlot] = useState<TimeSlot | null>(null);
+  const [isCreatingTimeSlot, setIsCreatingTimeSlot] = useState(false);
+  const [newTimeSlot, setNewTimeSlot] = useState({ time: '', date: selectedDate });
   
   // Generate dates for the next 14 days
   const getNextTwoWeeks = (): DateInfo[] => {
@@ -266,6 +270,114 @@ export default function AdminPanel() {
     }
   };
 
+  // Create new time slot
+  const createTimeSlot = async (date: string, time: string) => {
+    try {
+      // Check if time slot already exists
+      const existingSlot = timeSlots.find(slot => slot.date === date && slot.time === time);
+      if (existingSlot) {
+        alert('Time slot already exists for this date and time.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('available_timeslots')
+        .insert({
+          date: date,
+          time: time,
+          is_available: true
+        });
+
+      if (error) throw error;
+
+      setIsCreatingTimeSlot(false);
+      setNewTimeSlot({ time: '', date: selectedDate });
+      
+      // Refresh data
+      await fetchData();
+      alert('Time slot created successfully!');
+    } catch (error) {
+      console.error('Error creating time slot:', error);
+      alert('Failed to create time slot. Please try again.');
+    }
+  };
+
+  // Update time slot
+  const updateTimeSlot = async (timeSlotId: string, newTime: string) => {
+    try {
+      // Check if new time conflicts with existing slots
+      const existingSlot = timeSlots.find(slot => 
+        slot.date === editingTimeSlot?.date && 
+        slot.time === newTime && 
+        slot.id !== timeSlotId
+      );
+      
+      if (existingSlot) {
+        alert('Another time slot already exists at this time.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('available_timeslots')
+        .update({ time: newTime })
+        .eq('id', timeSlotId);
+
+      if (error) throw error;
+
+      setEditingTimeSlot(null);
+      
+      // Refresh data
+      await fetchData();
+      alert('Time slot updated successfully!');
+    } catch (error) {
+      console.error('Error updating time slot:', error);
+      alert('Failed to update time slot. Please try again.');
+    }
+  };
+
+  // Delete time slot
+  const deleteTimeSlot = async (timeSlotId: string, time: string) => {
+    // Check if there are any appointments for this time slot
+    const hasAppointments = appointments.some(
+      apt => apt.date === selectedDate && apt.time === time && apt.status !== 'cancelled'
+    );
+
+    if (hasAppointments) {
+      alert('Cannot delete time slot with existing appointments. Please cancel or reschedule the appointment first.');
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this time slot?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('available_timeslots')
+        .delete()
+        .eq('id', timeSlotId);
+
+      if (error) throw error;
+
+      // Refresh data
+      await fetchData();
+      alert('Time slot deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting time slot:', error);
+      alert('Failed to delete time slot. Please try again.');
+    }
+  };
+
+  // Generate time options for creating/editing slots
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 9; hour <= 18; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        times.push(timeString);
+      }
+    }
+    return times;
+  };
+
   const filterAppointmentsByDate = (date: string) => {
     return appointments.filter(appointment => appointment.date === date);
   };
@@ -295,6 +407,11 @@ export default function AdminPanel() {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Update newTimeSlot date when selectedDate changes
+  useEffect(() => {
+    setNewTimeSlot({ time: '', date: selectedDate });
+  }, [selectedDate]);
 
   // Render the appointment editor modal
   const renderAppointmentEditor = () => {
@@ -626,9 +743,29 @@ export default function AdminPanel() {
 
             {/* Time Slots for Selected Date */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-display font-semibold italic text-purple-900 mb-4 tracking-tight">
-                Time Slots Management
-              </h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-display font-semibold italic text-purple-900 tracking-tight">
+                  Time Slots Management
+                </h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsCreatingTimeSlot(true)}
+                    className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    ➕ Add Slot
+                  </button>
+                  <button
+                    onClick={() => setIsManagingTimeSlots(!isManagingTimeSlots)}
+                    className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                      isManagingTimeSlots 
+                        ? 'bg-red-600 text-white hover:bg-red-700' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {isManagingTimeSlots ? '✕ Exit Edit Mode' : '⚙️ Edit Mode'}
+                  </button>
+                </div>
+              </div>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {getTimeSlotsForDate(selectedDate).map((slot) => {
@@ -637,30 +774,50 @@ export default function AdminPanel() {
                   );
                   
                   return (
-                    <button
-                      key={slot.id}
-                      onClick={() => !hasAppointment && toggleTimeSlotAvailability(slot.id, slot.is_available)}
-                      disabled={hasAppointment}
-                      className={`p-3 rounded-lg border text-center font-medium text-sm transition-colors ${
-                        hasAppointment
-                          ? 'bg-red-100 border-red-300 text-red-700 cursor-not-allowed'
-                          : slot.is_available
-                          ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
-                          : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                      }`}
-                      title={
-                        hasAppointment
-                          ? 'Time slot has appointment'
-                          : slot.is_available
-                          ? 'Available - Click to disable'
-                          : 'Disabled - Click to enable'
-                      }
-                    >
-                      {formatTime(slot.time)}
-                      <div className="text-xs mt-1">
-                        {hasAppointment ? '📅 Booked' : slot.is_available ? '✅ Available' : '❌ Disabled'}
-                      </div>
-                    </button>
+                    <div key={slot.id} className="relative">
+                      <button
+                        onClick={() => !hasAppointment && !isManagingTimeSlots && toggleTimeSlotAvailability(slot.id, slot.is_available)}
+                        disabled={hasAppointment && !isManagingTimeSlots}
+                        className={`w-full p-3 rounded-lg border text-center font-medium text-sm transition-colors ${
+                          hasAppointment
+                            ? 'bg-red-100 border-red-300 text-red-700 cursor-not-allowed'
+                            : slot.is_available
+                            ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
+                            : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                        }`}
+                        title={
+                          hasAppointment
+                            ? 'Time slot has appointment'
+                            : slot.is_available
+                            ? 'Available - Click to disable'
+                            : 'Disabled - Click to enable'
+                        }
+                      >
+                        {formatTime(slot.time)}
+                        <div className="text-xs mt-1">
+                          {hasAppointment ? '📅 Booked' : slot.is_available ? '✅ Available' : '❌ Disabled'}
+                        </div>
+                      </button>
+                      
+                      {isManagingTimeSlots && (
+                        <div className="absolute -top-2 -right-2 flex gap-1">
+                          <button
+                            onClick={() => setEditingTimeSlot(slot)}
+                            className="w-6 h-6 bg-blue-600 text-white rounded-full text-xs hover:bg-blue-700 flex items-center justify-center"
+                            title="Edit time slot"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => deleteTimeSlot(slot.id, slot.time)}
+                            className="w-6 h-6 bg-red-600 text-white rounded-full text-xs hover:bg-red-700 flex items-center justify-center"
+                            title="Delete time slot"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -669,7 +826,12 @@ export default function AdminPanel() {
                 <p>• <span className="text-green-600">Green</span>: Available slots</p>
                 <p>• <span className="text-gray-600">Gray</span>: Disabled slots</p>
                 <p>• <span className="text-red-600">Red</span>: Booked slots</p>
-                <p className="mt-2 font-medium">Click available or disabled slots to toggle availability</p>
+                <p className="mt-2 font-medium">
+                  {isManagingTimeSlots 
+                    ? 'Edit Mode: Use ✏️ to edit or 🗑️ to delete time slots'
+                    : 'Click available or disabled slots to toggle availability'
+                  }
+                </p>
               </div>
             </div>
           </div>
@@ -748,6 +910,132 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+
+      {/* Appointment Editor Modal */}
+      {isEditing && editingAppointment && renderAppointmentEditor()}
+
+      {/* Time Slot Creation Modal */}
+      {isCreatingTimeSlot && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-display font-semibold italic text-purple-900 mb-4">
+              Create New Time Slot
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  readOnly
+                  className="w-full px-4 py-2 border rounded-md bg-gray-100 text-gray-700"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 mb-2">Time</label>
+                <select
+                  value={newTimeSlot.time}
+                  onChange={(e) => setNewTimeSlot({ ...newTimeSlot, time: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-md text-gray-900"
+                >
+                  <option value="">Select a time</option>
+                  {generateTimeOptions()
+                    .filter(time => !timeSlots.some(slot => slot.date === selectedDate && slot.time === time))
+                    .map((time) => (
+                      <option key={time} value={time}>
+                        {formatTime(time)}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => createTimeSlot(selectedDate, newTimeSlot.time)}
+                disabled={!newTimeSlot.time}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Create Time Slot
+              </button>
+              <button
+                onClick={() => {
+                  setIsCreatingTimeSlot(false);
+                  setNewTimeSlot({ time: '', date: selectedDate });
+                }}
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Time Slot Edit Modal */}
+      {editingTimeSlot && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-display font-semibold italic text-purple-900 mb-4">
+              Edit Time Slot
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={editingTimeSlot.date}
+                  readOnly
+                  className="w-full px-4 py-2 border rounded-md bg-gray-100 text-gray-700"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 mb-2">Current Time</label>
+                <input
+                  type="text"
+                  value={formatTime(editingTimeSlot.time)}
+                  readOnly
+                  className="w-full px-4 py-2 border rounded-md bg-gray-100 text-gray-700"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 mb-2">New Time</label>
+                <select
+                  value={editingTimeSlot.time}
+                  onChange={(e) => setEditingTimeSlot({ ...editingTimeSlot, time: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-md text-gray-900"
+                >
+                  {generateTimeOptions().map((time) => (
+                    <option key={time} value={time}>
+                      {formatTime(time)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => updateTimeSlot(editingTimeSlot.id, editingTimeSlot.time)}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Update Time Slot
+              </button>
+              <button
+                onClick={() => setEditingTimeSlot(null)}
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
