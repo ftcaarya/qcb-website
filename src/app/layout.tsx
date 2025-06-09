@@ -21,6 +21,9 @@ const libreBaskerville = Libre_Baskerville({
 export const metadata: Metadata = {
   title: "Queen City Blendz - Haircuts",
   description: "Book your appointment with Queen City Blendz for professional haircuts.",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

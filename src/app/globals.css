@@ -1,15 +1,14 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Libre+Baskerville:wght@400;700&display=swap');
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --font-primary: var(--font-bree), 'Bree Serif', Georgia, serif;
-  --font-display: var(--font-baskerville), 'Libre Baskerville', 'Times New Roman', serif;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-primary: 'Bree Serif', Georgia, serif;
+  --font-display: 'Libre Baskerville', 'Times New Roman', serif;
   --font-sans: var(--font-primary);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-serif: var(--font-display);
