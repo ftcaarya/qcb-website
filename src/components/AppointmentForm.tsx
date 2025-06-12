@@ -79,6 +79,7 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
         <div className="space-y-1 text-sm text-blue-800">
           <p><span className="font-medium">Date:</span> {format(parseSelectedDate(selectedDate), 'EEEE, MMMM d, yyyy')}</p>
           <p><span className="font-medium">Time:</span> {formatTime(selectedTime)}</p>
+          <p><span className="font-medium">Address:</span> 11503 Glanmire drive</p>
         </div>
       </div>
 
