@@ -61,6 +61,12 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
     return `$${(cents / 100).toFixed(2)}`;
   };
 
+  // Helper function to parse date correctly without timezone issues
+  const parseSelectedDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
+  };
+
   return (
     <div className="w-full">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -71,7 +77,7 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
       <div className="bg-blue-50 rounded-lg p-4 mb-6">
         <h4 className="font-medium text-blue-900 mb-2">Booking Summary</h4>
         <div className="space-y-1 text-sm text-blue-800">
-          <p><span className="font-medium">Date:</span> {format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')}</p>
+          <p><span className="font-medium">Date:</span> {format(parseSelectedDate(selectedDate), 'EEEE, MMMM d, yyyy')}</p>
           <p><span className="font-medium">Time:</span> {formatTime(selectedTime)}</p>
         </div>
       </div>

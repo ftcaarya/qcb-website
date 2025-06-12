@@ -56,6 +56,25 @@ export default function RootLayout({
         </header>
         
         {children}
+        
+        <footer className="bg-gray-900 text-white py-6 mt-auto">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <p className="text-sm">
+              Made by{' '}
+              <span className="font-semibold text-purple-300">Aarya Raut</span>
+              {' '}• DM{' '}
+              <a 
+                href="https://instagram.com/just.aaryaraut" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-pink-300 hover:text-pink-200 transition-colors underline"
+              >
+                @just.aaryaraut
+              </a>
+              {' '}on Instagram for websites
+            </p>
+          </div>
+        </footer>
       </body>
     </html>
   );

@@ -5,15 +5,16 @@ import { dbOperations } from '@/lib/supabase';
 interface DateCalendarProps {
   onDateSelect: (date: string) => void;
   selectedDate?: string;
+  refreshTrigger?: boolean; // Add refresh trigger
 }
 
-export default function DateCalendar({ onDateSelect, selectedDate }: DateCalendarProps) {
+export default function DateCalendar({ onDateSelect, selectedDate, refreshTrigger }: DateCalendarProps) {
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAvailableDates();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger as dependency
 
   const fetchAvailableDates = async () => {
     try {

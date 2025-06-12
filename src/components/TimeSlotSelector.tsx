@@ -39,11 +39,17 @@ export default function TimeSlotSelector({ selectedDate, onTimeSelect, selectedT
     );
   }
 
+  // Helper function to parse date correctly without timezone issues
+  const parseSelectedDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
+  };
+
   if (loading) {
     return (
       <div className="w-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Available Times for {format(new Date(selectedDate), 'EEEE, MMMM d')}
+          Available Times for {format(parseSelectedDate(selectedDate), 'EEEE, MMMM d')}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {Array.from({ length: 8 }).map((_, index) => (
@@ -60,7 +66,7 @@ export default function TimeSlotSelector({ selectedDate, onTimeSelect, selectedT
     return (
       <div className="w-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Available Times for {format(new Date(selectedDate), 'EEEE, MMMM d')}
+          Available Times for {format(parseSelectedDate(selectedDate), 'EEEE, MMMM d')}
         </h3>
         <div className="text-center py-8">
           <div className="text-gray-500 mb-2">No available time slots for this date</div>
@@ -81,7 +87,7 @@ export default function TimeSlotSelector({ selectedDate, onTimeSelect, selectedT
   return (
     <div className="w-full">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Available Times for {format(new Date(selectedDate), 'EEEE, MMMM d')}
+        Available Times for {format(parseSelectedDate(selectedDate), 'EEEE, MMMM d')}
       </h3>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

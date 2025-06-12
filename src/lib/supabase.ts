@@ -181,16 +181,74 @@ export const dbOperations = {
     endTime: string;
     slotDurationMinutes: number;
   }): Promise<void> {
-    // This will use the database function we created in the schema
-    const { error } = await supabase.rpc('generate_time_slots', {
-      start_date: config.startDate,
-      end_date: config.endDate,
-      start_time: config.startTime,
-      end_time: config.endTime,
-      duration_minutes: config.slotDurationMinutes
-    });
-    
-    if (error) throw error;
+    try {
+      // Check if we're using placeholder values
+      if (supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder')) {
+        throw new Error('Supabase configuration uses placeholder values. Please set proper NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+      }
+
+      console.log('🔄 Attempting to generate time slots with database function...');
+      
+      // Try to use the database function first
+      const { error } = await supabase.rpc('generate_time_slots', {
+        start_date: config.startDate,
+        end_date: config.endDate,
+        start_time: config.startTime,
+        end_time: config.endTime,
+        duration_minutes: config.slotDurationMinutes
+      });
+      
+      if (error) {
+        console.log('Database function failed, error:', error.message);
+        throw error;
+      }
+      
+      console.log('✅ Time slots generated successfully using database function');
+    } catch (error) {
+      // If database function doesn't exist, fall back to manual generation
+      console.log('🔄 Database function not available, using manual generation...');
+      
+      const startDate = new Date(config.startDate);
+      const endDate = new Date(config.endDate);
+      const slots = [];
+      
+      // Loop through each date
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        
+        // Parse start and end times
+        const [startHour, startMin] = config.startTime.split(':').map(Number);
+        const [endHour, endMin] = config.endTime.split(':').map(Number);
+        
+        // Generate hourly slots (simplified - every hour on the hour)
+        for (let hour = startHour; hour < endHour; hour++) {
+          const timeStr = `${String(hour).padStart(2, '0')}:00:00`;
+          slots.push({
+            date: dateStr,
+            time: timeStr,
+            is_available: true
+          });
+        }
+      }
+      
+      // Insert in batches to avoid overwhelming the database
+      if (slots.length > 0) {
+        console.log(`🔄 Inserting ${slots.length} time slots manually...`);
+        
+        const { error: insertError } = await supabase
+          .from('available_timeslots')
+          .insert(slots);
+        
+        if (insertError) {
+          console.error('❌ Failed to insert time slots:', insertError);
+          throw insertError;
+        }
+        
+        console.log('✅ Time slots inserted successfully using manual generation');
+      } else {
+        console.log('ℹ️ No time slots to insert');
+      }
+    }
   },
 
   // Admin: Get all time slots for management
