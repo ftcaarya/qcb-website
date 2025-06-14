@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 // In a real app, you would use a more robust authentication system
 // Use environment variable for the admin password
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'qcbadmin2024'; // Fallback for local development
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'Cloudy@69'; // Fallback for local development
 
 export default function AdminLayout({
   children,

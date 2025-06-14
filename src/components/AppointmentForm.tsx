@@ -93,7 +93,7 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
             <input
               type="text"
               {...register('firstName')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               placeholder="Enter your first name"
             />
             {errors.firstName && (
@@ -108,7 +108,7 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
             <input
               type="text"
               {...register('lastName')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               placeholder="Enter your last name"
             />
             {errors.lastName && (
@@ -125,7 +125,7 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
             <input
               type="tel"
               {...register('phone')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               placeholder="(555) 123-4567"
             />
             {errors.phone && (
@@ -140,7 +140,7 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
             <input
               type="text"
               {...register('instagram')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               placeholder="@yourusername"
             />
           </div>
