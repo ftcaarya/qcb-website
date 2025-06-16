@@ -99,17 +99,28 @@ export default function AdminPanel() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Fetch appointments
+      // Get today's date in YYYY-MM-DD format (using local timezone)
+      const today = new Date();
+      const todayString = today.getFullYear() + '-' + 
+                         String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(today.getDate()).padStart(2, '0');
+      
+      console.log('Admin Panel - Today\'s date (local):', todayString); // Debug log
+
+      // Fetch appointments from today onwards only
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
         .select('*')
+        .gte('date', todayString) // Only get appointments from today onwards
         .order('date', { ascending: true })
         .order('time', { ascending: true });
 
       if (appointmentsError) throw appointmentsError;
+      
+      console.log('Admin Panel - Fetched appointments:', appointmentsData?.length, 'total');
+      console.log('Admin Panel - First few appointments:', appointmentsData?.slice(0, 3).map(apt => ({ date: apt.date, time: apt.time, name: `${apt.first_name} ${apt.last_name}` })));
 
       // Fetch time slots for next 14 days
-      const today = new Date();
       const twoWeeksFromNow = new Date();
       twoWeeksFromNow.setDate(today.getDate() + 14);
 
@@ -868,11 +879,16 @@ export default function AdminPanel() {
                       return (
                         <tr key={appointment.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {new Date(appointment.date).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric',
-                              weekday: 'short'
-                            })}
+                            {(() => {
+                              // Parse date correctly without timezone issues
+                              const [year, month, day] = appointment.date.split('-').map(Number);
+                              const localDate = new Date(year, month - 1, day);
+                              return localDate.toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                weekday: 'short'
+                              });
+                            })()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {formatTime(appointment.time)}
