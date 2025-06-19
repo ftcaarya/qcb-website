@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { AppointmentFormValues } from '@/lib/supabase';
+import { AppointmentFormValues, cleanInstagramHandle } from '@/lib/supabase';
 
 interface AppointmentFormProps {
   selectedDate: string;
@@ -24,20 +24,31 @@ type AppointmentSchema = z.infer<typeof appointmentSchema>;
 
 export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }: AppointmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [instagramValue, setInstagramValue] = useState<string>('');
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<AppointmentSchema>({
     resolver: zodResolver(appointmentSchema),
   });
+
+  // Handle Instagram input with auto-formatting
+  const handleInstagramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const cleaned = cleanInstagramHandle(inputValue) || '';
+    setInstagramValue(cleaned);
+    setValue('instagram', cleaned);
+  };
 
   const handleFormSubmit = async (data: AppointmentSchema) => {
     setIsSubmitting(true);
     try {
       await onSubmit({
         ...data,
+        instagram: cleanInstagramHandle(data.instagram),
         service: 'Haircut', // Automatically set to the single service
         date: selectedDate,
         time: selectedTime,
@@ -137,12 +148,19 @@ export default function AppointmentForm({ selectedDate, selectedTime, onSubmit }
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Instagram Handle (Optional)
             </label>
-            <input
-              type="text"
-              {...register('instagram')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-              placeholder="@yourusername"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-500">@</span>
+              <input
+                type="text"
+                value={instagramValue}
+                onChange={handleInstagramChange}
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                placeholder="yourusername"
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              We'll automatically format this correctly - just enter your username
+            </p>
           </div>
         </div>
 

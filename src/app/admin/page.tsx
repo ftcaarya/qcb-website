@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { supabase, cleanInstagramHandle } from '@/lib/supabase';
 
 interface DateInfo {
   date: string;
@@ -261,7 +261,7 @@ export default function AdminPanel() {
           last_name: updatedAppointment.last_name,
           phone: updatedAppointment.phone,
           email: updatedAppointment.email,
-          instagram: updatedAppointment.instagram,
+          instagram: cleanInstagramHandle(updatedAppointment.instagram),
           time: updatedAppointment.time,
           notes: updatedAppointment.notes
         })
@@ -490,15 +490,25 @@ export default function AdminPanel() {
 
             <div>
               <label className="block text-gray-700 mb-2">Instagram (Optional)</label>
-              <input
-                type="text"
-                value={editingAppointment.instagram || ''}
-                onChange={(e) => setEditingAppointment({
-                  ...editingAppointment,
-                  instagram: e.target.value
-                })}
-                className="w-full px-4 py-2 border rounded-md text-gray-900"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">@</span>
+                <input
+                  type="text"
+                  value={editingAppointment.instagram || ''}
+                  onChange={(e) => {
+                    const cleaned = cleanInstagramHandle(e.target.value) || '';
+                    setEditingAppointment({
+                      ...editingAppointment,
+                      instagram: cleaned
+                    });
+                  }}
+                  className="w-full pl-8 pr-4 py-2 border rounded-md text-gray-900"
+                  placeholder="username"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Enter without @ - we'll format it correctly
+              </p>
             </div>
             
             <div>

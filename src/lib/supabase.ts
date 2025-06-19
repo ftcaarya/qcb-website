@@ -6,6 +6,15 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Utility function to clean Instagram handle
+export const cleanInstagramHandle = (handle?: string): string | undefined => {
+  if (!handle) return handle;
+  
+  // Remove all @ symbols from the beginning and then add exactly one
+  const cleaned = handle.replace(/^@+/, '');
+  return cleaned ? cleaned : undefined;
+}
+
 export interface AppointmentFormValues {
   firstName: string;
   lastName: string;
@@ -71,7 +80,7 @@ export const dbOperations = {
         first_name: appointmentData.firstName,
         last_name: appointmentData.lastName,
         phone: appointmentData.phone,
-        instagram: appointmentData.instagram,
+        instagram: cleanInstagramHandle(appointmentData.instagram),
         service: appointmentData.service,
         date: appointmentData.date,
         time: appointmentData.time,
