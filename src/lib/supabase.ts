@@ -135,6 +135,153 @@ export const dbOperations = {
     if (error) throw error;
   },
 
+  // Clean up past appointments
+  async cleanupPastAppointments(daysOld: number = 1): Promise<{ deletedCount: number }> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+    const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('appointments')
+      .delete()
+      .lt('date', cutoffDateStr)
+      .select('id');
+    
+    if (error) throw error;
+    
+    return { deletedCount: data?.length || 0 };
+  },
+
+  // Clean up past appointments with specific statuses
+  async cleanupPastAppointmentsByStatus(
+    daysOld: number = 1, 
+    statuses: ('pending' | 'confirmed' | 'cancelled')[] = ['confirmed']
+  ): Promise<{ deletedCount: number }> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+    const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('appointments')
+      .delete()
+      .lt('date', cutoffDateStr)
+      .in('status', statuses)
+      .select('id');
+    
+    if (error) throw error;
+    
+    return { deletedCount: data?.length || 0 };
+  },
+
+  // Clean up past appointments that are completed (date + time has passed)
+  async cleanupCompletedAppointments(hoursOld: number = 2): Promise<{ deletedCount: number }> {
+    const cutoffDateTime = new Date();
+    cutoffDateTime.setHours(cutoffDateTime.getHours() - hoursOld);
+    
+    // Get current date and time for comparison
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0];
+    
+    // First, get appointments that are past their date/time
+    const { data: pastAppointments, error: fetchError } = await supabase
+      .from('appointments')
+      .select('id, date, time')
+      .or(`date.lt.${currentDate},and(date.eq.${currentDate},time.lt.${currentTime})`);
+    
+    if (fetchError) throw fetchError;
+    
+    if (!pastAppointments || pastAppointments.length === 0) {
+      return { deletedCount: 0 };
+    }
+    
+    // Filter appointments that are older than the specified hours
+    const appointmentsToDelete = pastAppointments.filter(appointment => {
+      const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+      return appointmentDateTime < cutoffDateTime;
+    });
+    
+    if (appointmentsToDelete.length === 0) {
+      return { deletedCount: 0 };
+    }
+    
+    // Delete the filtered appointments
+    const appointmentIds = appointmentsToDelete.map(a => a.id);
+    const { error: deleteError } = await supabase
+      .from('appointments')
+      .delete()
+      .in('id', appointmentIds);
+    
+    if (deleteError) throw deleteError;
+    
+    return { deletedCount: appointmentsToDelete.length };
+  },
+
+  // Get appointment statistics (useful for monitoring)
+  async getAppointmentStats(): Promise<{
+    total: number;
+    pending: number;
+    confirmed: number;
+    cancelled: number;
+    pastAppointments: number;
+  }> {
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0];
+    
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('status, date, time');
+    
+    if (error) throw error;
+    
+    const stats = {
+      total: data?.length || 0,
+      pending: 0,
+      confirmed: 0,
+      cancelled: 0,
+      pastAppointments: 0,
+    };
+    
+    data?.forEach(appointment => {
+      // Count by status
+      if (appointment.status === 'pending') stats.pending++;
+      else if (appointment.status === 'confirmed') stats.confirmed++;
+      else if (appointment.status === 'cancelled') stats.cancelled++;
+      
+      // Count past appointments
+      const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+      const nowDateTime = new Date(`${currentDate}T${currentTime}`);
+      if (appointmentDateTime < nowDateTime) {
+        stats.pastAppointments++;
+      }
+    });
+    
+    return stats;
+  },
+
+  // Search appointments by phone number (upcoming only)
+  async getAppointmentsByPhone(phone: string): Promise<Appointment[]> {
+    // Clean phone number - remove all non-digits
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Get current date and time
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0];
+    
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .or(`phone.eq.${cleanPhone},phone.eq.${phone}`)
+      .or(`date.gt.${currentDate},and(date.eq.${currentDate},time.gt.${currentTime})`)
+      .order('date', { ascending: true })
+      .order('time', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
   // Admin: Add/remove time slots
   async addTimeSlot(date: string, time: string): Promise<void> {
     const { error } = await supabase

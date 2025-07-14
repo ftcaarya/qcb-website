@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AppointmentForm from '@/components/AppointmentForm';
+import AppointmentSearch from '@/components/AppointmentSearch';
 import DateCalendar from '@/components/DateCalendar';
 import TimeSlotSelector from '@/components/TimeSlotSelector';
 import { dbOperations, AppointmentFormValues } from '@/lib/supabase';
@@ -49,6 +50,9 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-12">
           <div className="max-w-6xl mx-auto">
+            {/* Appointment Search Section */}
+            <AppointmentSearch />
+            
             <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
               <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Book Your Appointment</h1>

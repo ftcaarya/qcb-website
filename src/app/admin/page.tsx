@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase, cleanInstagramHandle } from '@/lib/supabase';
+import CleanupManager from '@/components/CleanupManager';
 
 interface DateInfo {
   date: string;
@@ -935,6 +936,11 @@ export default function AdminPanel() {
             )}
           </div>
         )}
+
+        {/* Cleanup Manager Section */}
+        <div className="mt-8">
+          <CleanupManager />
+        </div>
       </div>
 
       {/* Appointment Editor Modal */}
