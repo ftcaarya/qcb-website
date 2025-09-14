@@ -22,7 +22,7 @@ interface Appointment {
   service: string;
   date: string;
   time: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'confirmed' | 'cancelled';
   notes?: string;
   created_at: string;
 }
@@ -45,9 +45,9 @@ interface Service {
 
 interface DashboardStats {
   totalAppointments: number;
-  pendingAppointments: number;
   confirmedAppointments: number;
   todayAppointments: number;
+  upcomingAppointments: number;
   weekRevenue: number;
 }
 
@@ -59,9 +59,9 @@ export default function AdminPanel() {
   const [services, setServices] = useState<Service[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalAppointments: 0,
-    pendingAppointments: 0,
     confirmedAppointments: 0,
     todayAppointments: 0,
+    upcomingAppointments: 0,
     weekRevenue: 0
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -145,9 +145,14 @@ export default function AdminPanel() {
 
       // Calculate stats
       const totalAppointments = appointmentsData?.length || 0;
-      const pendingAppointments = appointmentsData?.filter(apt => apt.status === 'pending').length || 0;
       const confirmedAppointments = appointmentsData?.filter(apt => apt.status === 'confirmed').length || 0;
       const todayAppointments = appointmentsData?.filter(apt => apt.date === today.toISOString().split('T')[0]).length || 0;
+      
+      // Calculate upcoming appointments (future dates only)
+      const upcomingAppointments = appointmentsData?.filter(apt => {
+        const aptDate = new Date(apt.date);
+        return aptDate >= today;
+      }).length || 0;
       
       // Calculate week revenue (confirmed appointments only)
       const weekStart = new Date();
@@ -170,9 +175,9 @@ export default function AdminPanel() {
       setServices(servicesData || []);
       setStats({
         totalAppointments,
-        pendingAppointments,
         confirmedAppointments,
         todayAppointments,
+        upcomingAppointments,
         weekRevenue
       });
 
@@ -189,7 +194,7 @@ export default function AdminPanel() {
   };
 
   // Update appointment status
-  const updateAppointmentStatus = async (appointmentId: string, status: 'pending' | 'confirmed' | 'cancelled') => {
+  const updateAppointmentStatus = async (appointmentId: string, status: 'confirmed' | 'cancelled') => {
     try {
       const { error } = await supabase
         .from('appointments')
@@ -612,8 +617,8 @@ export default function AdminPanel() {
           </div>
           
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Pending</h3>
-            <p className="text-3xl font-bold text-yellow-600">{stats.pendingAppointments}</p>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Upcoming</h3>
+            <p className="text-3xl font-bold text-blue-600">{stats.upcomingAppointments}</p>
           </div>
           
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -687,7 +692,6 @@ export default function AdminPanel() {
                   {filterAppointmentsByDate(selectedDate).map((appointment) => {
                     const service = services.find(s => s.name === appointment.service);
                     const statusColors = {
-                      pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
                       confirmed: 'bg-green-100 text-green-800 border-green-300',
                       cancelled: 'bg-red-100 text-red-800 border-red-300'
                     };
@@ -723,14 +727,6 @@ export default function AdminPanel() {
                         </div>
                         
                         <div className="flex space-x-2">
-                          {appointment.status === 'pending' && (
-                            <button
-                              onClick={() => updateAppointmentStatus(appointment.id, 'confirmed')}
-                              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                            >
-                              ✓ Confirm
-                            </button>
-                          )}
                           {appointment.status !== 'cancelled' && (
                             <button
                               onClick={() => updateAppointmentStatus(appointment.id, 'cancelled')}
@@ -882,7 +878,6 @@ export default function AdminPanel() {
                     {appointments.slice(0, 50).map((appointment) => {
                       const service = services.find(s => s.name === appointment.service);
                       const statusColors = {
-                        pending: 'bg-yellow-100 text-yellow-800',
                         confirmed: 'bg-green-100 text-green-800',
                         cancelled: 'bg-red-100 text-red-800'
                       };

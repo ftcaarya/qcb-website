@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 interface CleanupStats {
   total: number;
-  pending: number;
   confirmed: number;
   cancelled: number;
   pastAppointments: number;
@@ -115,14 +114,10 @@ export default function CleanupManager() {
         </div>
         
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
               <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
               <div className="text-sm text-gray-600">Total</div>
-            </div>
-            <div className="bg-yellow-50 p-3 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-800">{stats.pending}</div>
-              <div className="text-sm text-yellow-600">Pending</div>
             </div>
             <div className="bg-green-50 p-3 rounded-lg">
               <div className="text-2xl font-bold text-green-800">{stats.confirmed}</div>

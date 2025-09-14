@@ -84,7 +84,7 @@ export const dbOperations = {
         service: appointmentData.service,
         date: appointmentData.date,
         time: appointmentData.time,
-        status: 'pending'
+        status: 'confirmed'
       })
       .select()
       .single();
@@ -106,7 +106,7 @@ export const dbOperations = {
   },
 
   // Update appointment status
-  async updateAppointmentStatus(id: string, status: 'pending' | 'confirmed' | 'cancelled'): Promise<void> {
+  async updateAppointmentStatus(id: string, status: 'confirmed' | 'cancelled'): Promise<void> {
     const { error } = await supabase
       .from('appointments')
       .update({ status, updated_at: new Date().toISOString() })
@@ -155,7 +155,7 @@ export const dbOperations = {
   // Clean up past appointments with specific statuses
   async cleanupPastAppointmentsByStatus(
     daysOld: number = 1, 
-    statuses: ('pending' | 'confirmed' | 'cancelled')[] = ['confirmed']
+    statuses: ('confirmed' | 'cancelled')[] = ['confirmed']
   ): Promise<{ deletedCount: number }> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
@@ -220,7 +220,6 @@ export const dbOperations = {
   // Get appointment statistics (useful for monitoring)
   async getAppointmentStats(): Promise<{
     total: number;
-    pending: number;
     confirmed: number;
     cancelled: number;
     pastAppointments: number;
@@ -237,7 +236,6 @@ export const dbOperations = {
     
     const stats = {
       total: data?.length || 0,
-      pending: 0,
       confirmed: 0,
       cancelled: 0,
       pastAppointments: 0,
@@ -245,8 +243,7 @@ export const dbOperations = {
     
     data?.forEach(appointment => {
       // Count by status
-      if (appointment.status === 'pending') stats.pending++;
-      else if (appointment.status === 'confirmed') stats.confirmed++;
+      if (appointment.status === 'confirmed') stats.confirmed++;
       else if (appointment.status === 'cancelled') stats.cancelled++;
       
       // Count past appointments
