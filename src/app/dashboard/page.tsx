@@ -261,9 +261,7 @@ export default function Dashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            appointment.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : appointment.status === 'confirmed'
+                            appointment.status === 'confirmed'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}>
@@ -272,14 +270,6 @@ export default function Dashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            {appointment.status === 'pending' && (
-                              <button
-                                onClick={() => updateAppointment(appointment.id, 'confirmed')}
-                                className="px-3 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 transition-colors"
-                              >
-                                Confirm
-                              </button>
-                            )}
                             {appointment.status === 'confirmed' && (
                               <button
                                 onClick={() => updateAppointment(appointment.id, 'cancelled')}
